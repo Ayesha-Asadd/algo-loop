@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop Quest — Python Loops for Young Coders</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#070b18; --panel:rgba(255,255,255,.035); --sunk:#0b1128; --line:rgba(255,255,255,.09);
+    --txt:#e9eeff; --dim:#96a3cc;
+    --c1:#4f8cff; --c2:#a06bff; --c3:#20d4c0; --gold:#ffc93c; --ok:#3ddc9a; --no:#ff5d7e;
+    --grad1:linear-gradient(135deg,#4f8cff,#a06bff);
+    --grad2:linear-gradient(135deg,#ff7a59,#ff5d7e);
+  }
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  body::before,body::after{
+    content:""; position:fixed; border-radius:50%; filter:blur(90px); opacity:.30; z-index:0; pointer-events:none;
+  }
+  body::before{width:520px;height:520px;background:#3d5bff;top:-190px;left:-140px;animation:drift 22s ease-in-out infinite}
+  body::after{width:460px;height:460px;background:#a03dff;bottom:-190px;right:-130px;animation:drift 26s ease-in-out infinite reverse}
+  @keyframes drift{50%{transform:translate(50px,40px) scale(1.12)}}
+  .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:18px 16px 70px}
+  .mono{font-family:ui-monospace,Consolas,"Courier New",monospace}
+
+  /* ---------- top bar ---------- */
+  .hud{display:flex;align-items:center;gap:10px;padding:6px 0 14px;flex-wrap:wrap}
+  .hud .title{font-weight:800;letter-spacing:1.6px;font-size:.92rem}
+  .hud .sub{font-size:.7rem;color:var(--dim);letter-spacing:1.4px;text-transform:uppercase;margin-bottom:2px}
+  .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid var(--line);
+        border-radius:999px;padding:7px 13px;font-weight:800;font-size:.86rem}
+  .pill.stars{border-color:rgba(255,201,60,.4);color:var(--gold)}
+  .pill.pop{animation:pop .4s ease}
+  @keyframes pop{40%{transform:scale(1.18)}}
+  .icon-btn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);
+            color:var(--txt);display:grid;place-items:center;cursor:pointer;transition:.15s}
+  .icon-btn:hover{background:rgba(255,255,255,.12);transform:translateX(-2px)}
+  .pips{display:flex;gap:5px;flex-wrap:wrap;margin-left:6px}
+  .pips i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.16);display:block;transition:.2s}
+  .pips i.on{background:var(--ok);box-shadow:0 0 10px rgba(61,220,154,.7)}
+  .pips i.now{background:#fff;transform:scale(1.35)}
+
+  /* ---------- cards ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;backdrop-filter:blur(14px);
+        box-shadow:0 18px 40px rgba(0,0,0,.35)}
+  .hero{display:flex;align-items:center;gap:18px;padding:26px 24px;margin-bottom:16px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--grad1)}
+  .hero h1{margin:0;font-size:2rem;letter-spacing:.5px;background:var(--grad1);-webkit-background-clip:text;
+           background-clip:text;color:transparent}
+  .hero p{margin:6px 0 0;color:var(--dim);font-size:.92rem}
+  .spin{width:74px;height:74px;border-radius:22px;display:grid;place-items:center;flex:none;
+        background:linear-gradient(135deg,rgba(79,140,255,.25),rgba(160,107,255,.25));border:1px solid var(--line);
+        animation:float 3.4s ease-in-out infinite;color:#9ec0ff}
+  @keyframes float{50%{transform:translateY(-6px) rotate(-4deg)}}
+
+  .levels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .lvl{padding:18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden;border-top:2px solid var(--c)}
+  .lvl:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.22);box-shadow:0 22px 44px rgba(0,0,0,.5)}
+  .lvl .top{display:flex;gap:13px;align-items:flex-start}
+  .badge{width:42px;height:42px;flex:none;border-radius:14px;display:grid;place-items:center;font-weight:900;
+         font-size:1.15rem;color:#0a0f22;background:var(--c)}
+  .lvl .nm{font-weight:800;font-size:1.06rem;letter-spacing:.3px}
+  .lvl .tg{font-size:.76rem;color:var(--dim);margin-top:3px}
+  .lvl .foot{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .mini{flex:1;height:7px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+  .mini i{display:block;height:100%;background:var(--c);width:0;transition:.5s;border-radius:99px}
+  .pct{font-size:.76rem;color:var(--dim);font-weight:700;min-width:34px;text-align:right}
+  .stars{color:var(--gold);letter-spacing:2px;font-size:1rem}
+  .stars .off{color:rgba(255,255,255,.15)}
+
+  .codex{overflow:hidden}
+  .codex .inner{padding:4px 18px 18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .grid2 div{padding:11px 13px;border-radius:12px;background:var(--sunk);border:1px solid var(--line)}
+  .grid2 b{display:block;color:#8ab4ff;font-size:.72rem;letter-spacing:1.2px;margin-bottom:3px}
+  .grid2 span{font-size:.85rem;color:var(--dim);line-height:1.45;display:block}
+
+  /* ---------- stage ---------- */
+  .stage{padding:24px;border-top:3px solid var(--c);animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}}
+  .kind{display:inline-flex;align-items:center;gap:6px;font-size:.66rem;font-weight:900;letter-spacing:1.6px;
+        padding:5px 11px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid var(--line);
+        color:var(--dim);margin-bottom:12px}
+  .kind.boss{background:linear-gradient(135deg,rgba(255,122,89,.3),rgba(255,93,126,.3));color:#ffc9a8;border-color:rgba(255,122,89,.5)}
+  .q{margin:0 0 16px;font-size:1.32rem;line-height:1.45;font-weight:700}
+  .q code{background:#0c1226;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:.9em}
+
+  .codebox{background:#0a0f22;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:0 0 16px}
+  .codebox .bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(255,255,255,.04);
+                border-bottom:1px solid var(--line)}
+  .codebox .bar b{margin-left:8px;font-size:.68rem;letter-spacing:1.4px;color:var(--dim);font-weight:700}
+  .led{width:9px;height:9px;border-radius:50%;background:#ff5f57}.led:nth-child(2){background:#febc2e}.led:nth-child(3){background:#28c840}
+  .codebox pre{margin:0;padding:14px 16px;font-family:ui-monospace,Consolas,monospace;font-size:.92rem;
+               line-height:1.65;color:#d7e2ff;white-space:pre-wrap;overflow-x:auto}
+
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:15px 16px;border-radius:15px;cursor:pointer;
+       background:rgba(255,255,255,.04);border:1.5px solid var(--line);color:var(--txt);font-size:.95rem;
+       font-family:inherit;line-height:1.5;transition:.16s}
+  .opt:hover:not(:disabled){transform:translateY(-3px);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)}
+  .opt .k{width:28px;height:28px;flex:none;border-radius:9px;display:grid;place-items:center;font-weight:900;font-size:.8rem;
+          background:rgba(255,255,255,.1);color:var(--dim);transition:.16s}
+  .opt .txt{white-space:pre-wrap;font-family:inherit}
+  .opt.code .txt{font-family:ui-monospace,Consolas,monospace;font-size:.85rem;white-space:pre}
+  .opt.sel{border-color:var(--c1);background:rgba(79,140,255,.14)}
+  .opt.sel .k{background:var(--grad1);color:#fff}
+  .opt.right{border-color:var(--ok);background:rgba(61,220,154,.14)}
+  .opt.right .k{background:var(--ok);color:#04231a}
+  .opt.wrong{border-color:var(--no);background:rgba(255,93,126,.13);animation:shake .35s}
+  .opt.wrong .k{background:var(--no);color:#fff}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .opt:disabled{cursor:default;opacity:.85}
+  .opt.lock{opacity:.4}
+
+  /* ---------- trace table ---------- */
+  .tracewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#0a0f22;margin-bottom:12px}
+  table.tr{width:100%;border-collapse:separate;border-spacing:0;font-size:.9rem;min-width:420px}
+  table.tr th{background:rgba(255,255,255,.06);color:#9fb0dc;font-size:.7rem;letter-spacing:1.3px;
+              text-transform:uppercase;padding:11px 12px;text-align:left}
+  table.tr td{padding:9px 12px;border-top:1px solid rgba(255,255,255,.06);text-align:left}
+  table.tr tbody tr:hover td{background:rgba(255,255,255,.03)}
+  td.cell{min-width:74px;text-align:center;font-weight:800;cursor:pointer;border-radius:9px;transition:.15s}
+  td.cell.empty{border:1.5px dashed #3a4a7d;color:#3a4a7d;background:rgba(255,255,255,.02)}
+  td.cell.empty.next{border-color:#4f8cff;color:#8ab4ff;animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{50%{background:rgba(79,140,255,.16);box-shadow:0 0 0 4px rgba(79,140,255,.12)}}
+  td.cell.filled{background:rgba(79,140,255,.16);color:#fff}
+  td.cell.ok{background:rgba(61,220,154,.18);color:#9ff5cf;border:1.5px solid rgba(61,220,154,.5)}
+  td.cell.bad{background:rgba(255,93,126,.16);color:#ffb3c2;border:1.5px solid rgba(255,93,126,.5);animation:shake .35s}
+  td.given{color:var(--dim);font-weight:700}
+  .poolhint{font-size:.8rem;color:var(--dim);margin:0 0 9px}
+  .pool{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{padding:10px 16px;border-radius:12px;cursor:pointer;font-weight:800;font-size:.92rem;font-family:inherit;
+        background:linear-gradient(135deg,rgba(79,140,255,.22),rgba(160,107,255,.22));
+        border:1.5px solid rgba(255,255,255,.16);color:#fff;transition:.15s}
+  .chip:hover{transform:translateY(-3px) scale(1.04);border-color:#fff}
+  .chip.used{opacity:.28}
+
+  /* ---------- buttons ---------- */
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:13px;cursor:pointer;
+       border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--txt);font-weight:700;
+       font-size:.9rem;font-family:inherit;transition:.16s}
+  .btn:hover:not(:disabled){background:rgba(255,255,255,.14);transform:translateY(-2px)}
+  .btn.go{background:var(--grad1);border-color:transparent;color:#fff;box-shadow:0 8px 22px rgba(79,140,255,.35)}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:8px 13px;font-size:.82rem;font-weight:600}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+  .hintbox{display:none;margin-top:14px;padding:13px 16px;border-radius:13px;background:var(--sunk);
+           border:1px solid var(--line);color:#c6d0f0;font-size:.9rem;line-height:1.6;white-space:pre-wrap}
+
+  .coach{display:none;margin-top:18px;padding:14px 16px;border-radius:14px;align-items:flex-start;gap:11px;line-height:1.6;font-size:.93rem}
+  .coach.show{display:flex;animation:rise .25s ease}
+  .coach.ok{background:rgba(61,220,154,.1);border:1px solid rgba(61,220,154,.35);color:#bdf5de}
+  .coach.no{background:rgba(255,93,126,.1);border:1px solid rgba(255,93,126,.35);color:#ffd0da}
+  .coach .ic{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:900;background:rgba(255,255,255,.12)}
+
+  /* ---------- code editor ---------- */
+  .editor{display:flex;background:#0a0f22;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .gutter{padding:14px 11px;background:rgba(255,255,255,.04);color:#4a5680;font-size:.92rem;line-height:1.6;
+          text-align:right;min-width:38px;user-select:none;font-family:ui-monospace,Consolas,monospace;
+          white-space:pre;border-right:1px solid var(--line)}
+  .editor textarea{flex:1;border:0;outline:0;resize:vertical;padding:14px;background:transparent;color:#d7e2ff;
+                   font-family:ui-monospace,Consolas,monospace;font-size:.92rem;line-height:1.6;min-height:150px;tab-size:4}
+  .console{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:16px;background:#080d1c}
+  .console .bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--line)}
+  .console .bar b{margin-left:8px;font-size:.68rem;letter-spacing:1.4px;color:var(--dim)}
+  pre.out{margin:0;padding:13px 15px;font-family:ui-monospace,Consolas,monospace;font-size:.9rem;color:#7ef0b8;
+          white-space:pre-wrap;line-height:1.6;min-height:24px}
+  pre.out:empty::after{content:"▌";color:#3d4a80;animation:pulse 1.1s step-end infinite}
+
+  .checks{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:8px}
+  .checks li{display:flex;gap:11px;align-items:flex-start;padding:10px 13px;border-radius:11px;
+             background:rgba(255,255,255,.035);border:1px solid var(--line);font-size:.88rem;color:var(--dim);transition:.2s}
+  .checks li .dot{width:21px;height:21px;flex:none;border-radius:7px;display:grid;place-items:center;
+                  background:rgba(255,255,255,.1);font-weight:900;font-size:.75rem}
+  .checks li.yes{color:#bdf5de;border-color:rgba(61,220,154,.4);background:rgba(61,220,154,.08)}
+  .checks li.yes .dot{background:var(--ok);color:#04231a}
+  .checks li.no{border-color:rgba(255,93,126,.4);background:rgba(255,93,126,.07)}
+  .checks li.no .dot{background:var(--no);color:#fff}
+
+  /* ---------- finish ---------- */
+  .finish{padding:38px 26px;text-align:center;border-top:3px solid var(--c)}
+  .burst{font-size:3rem;letter-spacing:8px;margin-bottom:8px}
+  .burst span{display:inline-block;animation:starin .6s backwards}
+  .burst span:nth-child(2){animation-delay:.15s}.burst span:nth-child(3){animation-delay:.3s}
+  @keyframes starin{from{opacity:0;transform:scale(0) rotate(-90deg)}}
+  .score-big{font-size:3.4rem;font-weight:900;line-height:1}
+  .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+  .confetti i{position:absolute;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}
+
+  @media(max-width:680px){
+    .opts{grid-template-columns:1fr}
+    .levels{grid-template-columns:1fr}
+    .hero{flex-direction:column;text-align:center}
+    .grid2{grid-template-columns:1fr}
+    .stage{padding:18px}
+    .q{font-size:1.14rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap"><div id="app"></div></div>
+
+<script>
+const SAVE_KEY = "loopquest.v2";
+
+/* ============================ CONTENT ============================ */
+const LEVELS = [
+  {
+    id:1, name:"LOOP EXPLORER", color:"var(--c1)", tag:"Basics", blurb:"Meet loops, range() and the loop variable",
+    tasks:[
+      { type:"choice", kind:"MCQ", topic:"Iteration",
+        q:"What does <b>iteration</b> mean in programming?",
+        opts:["Making a decision","Repeating instructions","Storing data","Printing text"],
+        a:1, why:"Iteration means <b>repeating</b> instructions. A loop does the repeating for you." },
+
+      { type:"choice", kind:"MCQ", topic:"for loop",
+        code:'for i in range(3):\n    print("Hello")',
+        q:"This loop prints Hello 3 times. What is the loop for?",
+        opts:["To make a decision","To repeat code","To stop the program","To take input only once"],
+        a:1, why:"A <b>for loop</b> repeats the same code, so you only have to write it once." },
+
+      { type:"choice", kind:"MCQ", topic:"range()",
+        q:"What does <code>range(4)</code> count?",
+        opts:["1, 2, 3, 4","0, 1, 2, 3","0, 1, 2, 3, 4","4"],
+        a:1, why:"Python starts counting at <b>0</b>. range(4) gives 0, 1, 2, 3 — that is 4 turns around the loop." },
+
+      { type:"choice", kind:"MCQ", topic:"Loop variable",
+        code:'for i in range(5):\n    print(i)',
+        q:"Which one is the <b>loop variable</b>?",
+        opts:["for","range","i","print"],
+        a:2, why:"The loop variable keeps the count of the turns. Here that is <b>i</b>." },
+
+      { type:"choice", kind:"PREDICT", topic:"Predict the output",
+        code:'for i in range(3):\n    print("Hi")',
+        q:"What will be printed?",
+        opts:["Hi\nHi","Hi\nHi\nHi","0\n1\n2","Hi 3"],
+        a:1, why:"The loop goes round 3 times and prints <b>Hi</b> each time." },
+
+      { type:"choice", kind:"PREDICT", topic:"How many times?",
+        code:'for i in range(5):\n    print("Python")',
+        q:"How many times will <b>Python</b> be printed?",
+        opts:["4","5","6","0"],
+        a:1, why:"range(5) counts 0, 1, 2, 3, 4 — that is 5 prints." },
+
+      { type:"choice", kind:"MCQ", topic:"Complete the code",
+        code:'for i in range(____):\n    print("Welcome")',
+        q:'Complete the code so <b>Welcome</b> is printed 4 times.',
+        opts:["3","4","5","1"],
+        a:1, why:"range(4) gives 4 numbers: 0, 1, 2, 3." },
+
+      { type:"choice", kind:"DEBUG", topic:"Find the mistake",
+        code:'for i in range(3):\nprint("Hello")',
+        q:"What is wrong with this code?",
+        opts:["range() is wrong","print() needs to be indented","for must be capital letters","i should be deleted"],
+        a:1, why:"Everything inside a loop must start with spaces. Python wants <b>4 spaces</b> — that is called <b>indenting</b>." },
+
+      { type:"choice", kind:"MCQ", topic:"Selection",
+        code:'for i in range(5):\n    if i > 2:\n        print("Big")',
+        q:"What is the <b>if</b> doing?",
+        opts:["Repeating the loop","Checking a condition","Creating the loop","Changing the range"],
+        a:1, why:"<b>if</b> checks a condition first, then runs the line underneath it." },
+
+      { type:"trace", kind:"TRACE", topic:"Simple trace",
+        code:'for i in range(4):\n    print(i)',
+        q:"Fill in the trace table. Tap a value — it drops into the glowing box.",
+        head:["Iteration","i","Output"],
+        rows:[["1","?","?"],["2","?","?"],["3","?","?"],["4","?","?"]],
+        cols:[1,2], pool:["0","1","2","3"],
+        a:["0","0","1","1","2","2","3","3"],
+        why:"range(4) gives 0, 1, 2, 3, and each number is printed straight after." }
+    ]
+  },
+  {
+    id:2, name:"CODE MASTER", color:"var(--c2)", tag:"Challenge", blurb:"Ranges with steps, bugs, code writing and a final boss",
+    tasks:[
+      { type:"choice", kind:"PREDICT", topic:"range(a, b, c)",
+        code:'for i in range(2, 8, 2):\n    print(i)',
+        q:"Start at 2, stop before 8, add 2 each time. What is printed?",
+        opts:["2\n4\n6","2\n4\n6\n8","1\n3\n5\n7","0\n2\n4\n6"],
+        a:0, why:"range(2, 8, 2) counts <b>2, 4, 6</b> and stops before 8." },
+
+      { type:"choice", kind:"MCQ", topic:"Three numbers",
+        code:'for i in range(1, 10, 3):',
+        q:"What does this mean?",
+        opts:["Start at 1, stop before 10, add 3 each time",
+              "Start at 10, stop at 1, add 3 each time",
+              "Start at 1, print 10 numbers, add 3 each time",
+              "Start at 0 and add 10 each time"],
+        a:0, why:"The three numbers are <b>start</b>, <b>stop</b> and <b>step</b>. So range(1, 10, 3) gives 1, 4, 7." },
+
+      { type:"trace", kind:"TRACE", topic:"Loop + if / else",
+        code:'for i in range(5):\n    if i > 2:\n        print("Big")\n    else:\n        print("Small")',
+        q:"Fill in the table. Remember: only values above 2 are Big.",
+        head:["Iteration","i","i &gt; 2?","Output"],
+        rows:[["1","0","?","?"],["2","1","?","?"],["3","2","?","?"],["4","3","?","?"],["5","4","?","?"]],
+        cols:[2,3], pool:["False","Small","True","Big"],
+        a:["False","Small","False","Small","False","Small","True","Big","True","Big"],
+        why:"0, 1 and 2 are not more than 2, so they print Small. 3 and 4 are, so they print Big." },
+
+      { type:"choice", kind:"PREDICT", topic:"A star in the loop",
+        code:'for i in range(4):\n    if i == 2:\n        print("STAR")\n    else:\n        print(i)',
+        q:"What is the output?",
+        opts:["0\n1\nSTAR\n3","STAR\nSTAR\nSTAR\nSTAR","0\n1\n2\n3","1\n2\nSTAR\n4"],
+        a:0, why:"i is 2 only on the 3rd turn, so only then does it print STAR." },
+
+      { type:"choice", kind:"DEBUG", topic:"Missing colon",
+        code:'for i in range(3)\n    print("Hello")',
+        q:"The programmer wants Hello printed 3 times. What is missing?",
+        opts:[";  (semicolon)",":  (colon)",",  (comma)",".  (full stop)"],
+        a:1, why:"A <b>for</b> line must end with a <b>colon :</b>" },
+
+      { type:"choice", kind:"DEBUG", topic:"Indentation",
+        code:'for i in range(3):\n    if i > 1:\n        print("Big")\n  else:\n        print("Small")',
+        q:"What is wrong?",
+        opts:["range(3)","if i > 1","else is not lined up with the if",'print("Small")'],
+        a:2, why:"<b>else</b> must line up with its <b>if</b> — the same number of spaces." },
+
+      { type:"choice", kind:"PREDICT", topic:"Countdown",
+        code:"5\n4\n3\n2\n1",
+        q:"Which code prints 5, 4, 3, 2, 1?",
+        opts:['for i in range(5):\n    print(i)',
+              'for i in range(5, 0, -1):\n    print(i)',
+              'for i in range(1, 5):\n    print(i)',
+              'for i in range(0, 5):\n    print(i)'],
+        a:1, why:"range(5, 0, -1) starts at 5 and counts <b>down</b> to 1." },
+
+      { type:"choice", kind:"CONVERT", topic:"Pseudocode to Python",
+        code:'FOR i FROM 0 TO 2\n    OUTPUT "Hello"\nENDFOR',
+        q:"Which Python code does the same job?",
+        opts:['for i in range(2):\n    print("Hello")',
+              'for i in range(3):\n    print("Hello")',
+              'for i in range(4):\n    print("Hello")',
+              'for i in range(0):\n    print("Hello")'],
+        a:1, why:"FROM 0 TO 2 means 0, 1, 2 — that is 3 turns, so <b>range(3)</b>." },
+
+      { type:"code", kind:"CODE", topic:"Coding challenge", title:"Favourite subject chatbot",
+        brief:"Write Python that asks the user for their favourite subject <b>3 times</b> and prints their answer each time.",
+        starter:"for i in range(3):\n    ",
+        reference:'for i in range(3):\n    favSubject = input("What is your favourite subject? ")\n    print("Your favourite subject is", favSubject)',
+        hint:'for i in range(3):\n    favSubject = input(...)\n    print(...)\n\nBoth lines need 4 spaces at the start.',
+        checks:[
+          { id:"for",   label:"Starts a for loop: <i>for</i> ... <i>in</i> range(...)", test:s=>/^\s*for\s+\w+\s+in\s+range\s*\(/m.test(s) },
+          { id:"range3",label:"Goes round 3 times: range(3)", test:s=>/range\s*\(\s*3\s*\)/.test(s) },
+          { id:"ind",   label:"The ask and print lines are <b>inside</b> the loop",
+            test:s=>{ const L=s.split(/\r?\n/).filter(x=>x.trim());
+              if(L.length<2) return false;
+              const ind=x=>(x.match(/^\s*/)[0].length);
+              return ind(L[0])===0 && L.slice(1).every(x=>ind(x)>0); } },
+          { id:"input", label:"Asks the user with input()", test:s=>/\binput\s*\(/.test(s) },
+          { id:"print", label:"Shows the answer with print()", test:s=>/\bprint\s*\(/.test(s) }
+        ] },
+
+      { type:"trace", kind:"BOSS", topic:"Final boss", boss:true,
+        code:'for i in range(5):\n    if i > 3:\n        print("Done")\n    else:\n        print("Loop", i)',
+        q:"Fill in the whole table to finish the level. Take your time!",
+        head:["Line","i","i &gt; 3?","Output"],
+        rows:[["1","?","?","?"],["2","?","?","?"],["3","?","?","?"],["4","?","?","?"],["5","?","?","?"]],
+        cols:[1,2,3],
+        pool:["0","1","2","3","4","False","True","Loop 0","Loop 1","Loop 2","Loop 3","Done"],
+        a:["0","False","Loop 0","1","False","Loop 1","2","False","Loop 2","3","False","Loop 3","4","True","Done"],
+        why:"0, 1, 2 and 3 are not more than 3, so each prints <b>Loop</b> with its number. Only i = 4 is more than 3, so it prints <b>Done</b>." }
+    ]
+  }
+];
+
+/* ============================ ENGINE ============================ */
+const state = { level:null, task:0, total:0, answers:{}, keyHandler:null };
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function taskPts(t){ return t.type==="code" ? t.checks.length : 1; }
+function levelPts(L){ return L.tasks.reduce((x,t)=>x+taskPts(t),0); }
+function earned(){ return Object.values(state.answers).reduce((a,b)=>a+b,0); }
+function markAnswer(L, ti, pts){
+  const key = L.id + ":" + ti;
+  state.answers[key] = Math.max(state.answers[key] || 0, pts);
+  refreshScore();
+  refreshPips(L);
+}
+function refreshPips(L){
+  const bar = $(".pips");
+  if(!bar || !L) return;
+  [...bar.children].forEach((el,i)=>{
+    const done = (state.answers[L.id+":"+i] || 0) >= taskPts(L.tasks[i]);
+    el.classList.toggle("on", done);
+    el.classList.toggle("now", !done && i === state.task);
+  });
+}
+function clearKeys(){
+  if(state.keyHandler) document.removeEventListener("keydown", state.keyHandler);
+  state.keyHandler = null;
+}
+function load(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)) || {}; }catch(e){ return {}; } }
+function save(d){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(d)); }catch(e){} }
+function starsOf(pct){ return pct>=90?3 : pct>=60?2 : pct>0?1 : 0; }
+function starRow(n){
+  return `<span class="stars">${[0,1,2].map(i=>`<span class="${i<n?"":"off"}">★</span>`).join("")}</span>`;
+}
+function codeBox(code, label){
+  return `<div class="codebox"><div class="bar"><span class="led"></span><span class="led"></span><span class="led"></span><b>${label||"python"}</b></div><pre>${esc(code)}</pre></div>`;
+}
+function seededShuffle(list, seed){
+  const a = list.slice();
+  let s = (seed * 2654435761) % 4294967296;
+  const rnd = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* ---------- tiny Python-subset simulator ---------- */
+function runPython(src, inputs){
+  const lines = src.replace(/\t/g,"    ").split(/\r?\n/);
+  const env = {}, out = [];
+  let idx = 0;
+  const ind = x => (x.match(/^\s*/)[0].length);
+  function strip(l){
+    let q = "";
+    for(let i=0;i<l.length;i++){
+      const c = l[i];
+      if(q){ if(c===q) q=""; continue; }
+      if(c==='"' || c==="'"){ q=c; continue; }
+      if(c==="#") return l.slice(0,i);
+    }
+    return l;
+  }
+  function blockEnd(start, min){
+    let i = start;
+    while(i<lines.length){
+      if(!strip(lines[i]).trim()){ i++; continue; }
+      if(ind(lines[i])<min) break;
+      i++;
+    }
+    return i;
+  }
+  function resolve(t){
+    if(/^["'].*["']$/.test(t)) return t.slice(1,-1);
+    if(/^-?\d+(\.\d+)?$/.test(t)) return t;
+    if(t in env) return String(env[t]);
+    return t;
+  }
+  function rangeVals(args){
+    const a = args.map(x=>parseFloat(x.trim())).filter(n=>!isNaN(n));
+    const start = a.length===1?0:a[0], stop = a.length===1?a[0]:a[1], step = a.length>2?a[2]:1;
+    const v = [];
+    if(step>0) for(let x=start;x<stop;x+=step) v.push(Number(x.toFixed(6)));
+    else if(step<0) for(let x=start;x>stop;x+=step) v.push(Number(x.toFixed(6)));
+    return v;
+  }
+  function block(start, min){
+    let i = start;
+    while(i<lines.length){
+      const raw = lines[i];
+      const L = strip(raw).trim();
+      if(!L || L.startsWith("#")){ i++; continue; }
+      if(ind(raw)<min) return i;
+      let m;
+      if((m = L.match(/^for\s+(\w+)\s+in\s+range\s*\(([^)]*)\)\s*:/))){
+        const name = m[1], end = blockEnd(i+1, ind(raw)+1);
+        const args = m[2].split(",").length===1 ? ["0",m[2]] : m[2].split(",");
+        for(const v of rangeVals(args)){ env[name]=v; block(i+1, ind(raw)+1); }
+        i = end; continue;
+      }
+      if(/^if\s+[\s\S]*:\s*$/.test(L)){
+        const ind0 = ind(raw);
+        let taken = false;
+        if(evalTest(L.replace(/^if\s+([\s\S]*?)\s*:\s*$/, "$1"))){ block(i+1, ind0+1); taken = true; }
+        i = skipBlank(blockEnd(i+1, ind0+1));
+        while(i<lines.length && ind(lines[i])===ind0){
+          const Lk = strip(lines[i]).trim();
+          const em = Lk.match(/^elif\s+([\s\S]*?)\s*:\s*$/);
+          if(em){
+            if(!taken && evalTest(em[1])){ block(i+1, ind0+1); taken = true; }
+            i = skipBlank(blockEnd(i+1, ind0+1));
+            continue;
+          }
+          if(/^else\s*:\s*$/.test(Lk)){
+            if(!taken) block(i+1, ind0+1);
+            i = blockEnd(i+1, ind0+1);
+          }
+          break;
+        }
+        continue;
+      }
+      if((m = L.match(/^print\s*\((.*)\)$/))){
+        out.push(m[1].split(",").map(p=>resolve(p.trim())).join(" "));
+      } else if((m = L.match(/^(\w+)\s*=\s*input\s*\(.*\)$/))){
+        env[m[1]] = idx<inputs.length ? inputs[idx] : "Math"; idx++;
+      } else if((m = L.match(/^(\w+)\s*=\s*(.+)$/))){
+        env[m[1]] = resolve(m[2].trim());
+      } else if(/^(import|from)\s/.test(L) || /^time\.sleep/.test(L) || /^pass$/.test(L)){
+      } else if(L==="break"){ return lines.length; }
+      i++;
+    }
+    return i;
+  }
+  function skipBlank(i){
+    while(i<lines.length && !strip(lines[i]).trim()) i++;
+    return i;
+  }
+  function evalTest(expr){
+    const m = String(expr).match(/^([\w"']+)\s*(==|!=|>=|<=|>|<)\s*([\w"']+)$/);
+    if(!m) return false;
+    const left = resolve(m[1]), right = resolve(m[3]);
+    const a = parseFloat(left), b = parseFloat(right);
+    const bothNum = !isNaN(a) && !isNaN(b) && /^-?[\d.]+$/.test(String(m[1]).trim()) && /^-?[\d.]+$/.test(String(m[3]).trim());
+    switch(m[2]){
+      case "==": return bothNum ? a===b : String(left)===String(right);
+      case "!=": return bothNum ? a!==b : String(left)!==String(right);
+      case ">":  return bothNum ? a>b  : String(left)>String(right);
+      case "<":  return bothNum ? a<b  : String(left)<String(right);
+      case ">=": return bothNum ? a>=b : String(left)>=String(right);
+      case "<=": return bothNum ? a<=b : String(left)<=String(right);
+    }
+    return false;
+  }
+  block(0,0);
+  return out;
+}
+
+/* ---------- render ---------- */
+function render(){
+  clearKeys();
+  if(!state.level) renderHome(); else renderLevel();
+  const s = $("#starCount");
+  if(s) s.textContent = Object.values(load()).reduce((a,b)=>a+(b.stars||0),0);
+}
+
+function renderHome(){
+  const prog = load();
+  const totalPts = LEVELS.reduce((a,l)=>a+levelPts(l),0);
+  const gotPts = LEVELS.reduce((a,l)=>a+Math.round((prog["L"+l.id]?.pct||0)/100*levelPts(l)),0);
+  app.innerHTML = `
+  <div class="hud">
+    <div class="title">LOOP QUEST</div>
+    <div class="spacer"></div>
+    <div class="pill stars"><span>★</span><span id="starCount">0</span></div>
+    <div class="pill">${gotPts}<span style="color:#8b97c4">/${totalPts}</span></div>
+  </div>
+
+  <div class="card hero">
+    <div class="spin">${ICON.loop}</div>
+    <div>
+      <h1>LOOP QUEST</h1>
+      <p>Learn Python loops · 2 levels · open from the start</p>
+    </div>
+  </div>
+
+  <div class="levels">
+    ${LEVELS.map(l=>{
+      const p = prog["L"+l.id], pts = levelPts(l);
+      return `<div class="card lvl" data-lvl="${l.id}" style="--c:${l.color}">
+        <div class="top">
+          <div class="badge">${l.id}</div>
+          <div>
+            <div class="nm">${l.name}</div>
+            <div class="tg">${l.blurb}</div>
+            <div class="tg">${l.tasks.length} tasks · ${pts} pts</div>
+          </div>
+        </div>
+        <div class="foot">
+          ${starRow(p ? p.stars : 0)}
+          <span class="mini"><i style="width:${p?p.pct:0}%"></i></span>
+          <span class="pct">${p ? p.pct+"%" : "—"}</span>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>
+
+  <div class="card codex">
+    <button class="btn ghost" id="codexBtn" style="width:100%;justify-content:space-between;padding:16px 18px">
+      <span style="display:flex;align-items:center;gap:10px">${ICON.book}<b>Codex</b><span style="color:#8b97c4;font-weight:400">keywords &amp; reference</span></span>
+      <span id="codexArrow">▾</span>
+    </button>
+    <div class="inner" id="codexBody" style="display:none">
+      <div class="grid2">
+        <div><b>ITERATION</b><span>one trip around the loop</span></div>
+        <div><b>COUNT-CONTROLLED LOOP</b><span>a loop that repeats a set number of times</span></div>
+        <div><b>FOR LOOP</b><span>Python's count-controlled loop</span></div>
+        <div><b>LOOP VARIABLE</b><span>the name that keeps the count, like i</span></div>
+        <div><b>SELECTION</b><span>an if that checks a condition</span></div>
+        <div><b>SEQUENCE</b><span>the order you do things in</span></div>
+      </div>
+      <div class="grid2 mono" style="font-size:.85rem">
+        <div><b>PSEUDOCODE</b><span>START<br>FOR i FROM 0 TO 2<br>OUTPUT "Hello"<br>ENDFOR<br>STOP</span></div>
+        <div><b>PYTHON</b><span>for i in range(3):<br>&nbsp;&nbsp;print("Hello")</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  const open = $("#codexBody");
+  $("#codexBtn").onclick = ()=>{
+    const showing = open.style.display !== "none";
+    open.style.display = showing ? "none" : "block";
+    $("#codexArrow").textContent = showing ? "▾" : "▴";
+  };
+  app.querySelectorAll("[data-lvl]").forEach(el=>el.onclick = ()=>startLevel(+el.dataset.lvl));
+}
+function startLevel(id){
+  state.level = id; state.task = 0; state.total = 0; state.answers = {};
+  render();
+}
+
+function renderLevel(){
+  const L = LEVELS.find(l=>l.id===state.level);
+  const t = L.tasks[state.task];
+  const pts = levelPts(L);
+  app.innerHTML = `
+  <div class="hud">
+    <button class="icon-btn" id="quit" title="Level select (Esc)">${ICON.back}</button>
+    <div>
+      <div class="sub" style="color:${L.color}">${L.name}</div>
+      <div class="title">Task ${state.task+1} of ${L.tasks.length}</div>
+    </div>
+    <div class="pips">
+      ${L.tasks.map((_,i)=>`<i class="${(state.answers[L.id+":"+i]||0)>=taskPts(L.tasks[i])?"on":""} ${i===state.task?"now":""}"></i>`).join("")}
+    </div>
+    <div class="spacer"></div>
+    <div class="pill" id="scorepill">${ICON.bolt}<span id="scorebox">${earned()}/${pts}</span></div>
+  </div>
+  <div class="card stage" style="--c:${L.color}">
+    <div class="kind ${t.boss?"boss":""}">${t.boss?"★ FINAL BOSS":t.kind}</div>
+    ${t.code ? codeBox(t.code) : ""}
+    <h2 class="q">${t.q}</h2>
+    ${t.type==="choice" ? viewChoice(L,t) : t.type==="trace" ? viewTrace(L,t) : viewCode(L,t)}
+  </div>`;
+  $("#quit").onclick = ()=>{ state.level=null; render(); };
+  if(t.type==="choice") wireChoice(L,t);
+  if(t.type==="trace") wireTrace(L,t);
+  if(t.type==="code") wireCode(L,t);
+}
+function refreshScore(){
+  const L = LEVELS.find(l=>l.id===state.level);
+  if(!L) return;
+  const box = $("#scorebox"), pill = $("#scorepill");
+  if(box){
+    box.textContent = earned()+"/"+levelPts(L);
+    pill.classList.remove("pop"); void pill.offsetWidth; pill.classList.add("pop");
+  }
+}
+
+/* ---------- choice tasks ---------- */
+function viewChoice(L,t){
+  const order = seededShuffle(t.opts.map((_,i)=>i), L.id*31 + state.task);
+  return `
+  <div class="opts">${order.map((orig,n)=>`<button class="opt ${t.opts[orig].includes("\n")?"code":""}" data-o="${orig}">
+      <span class="k">${String.fromCharCode(65+n)}</span><span class="txt">${esc(t.opts[orig])}</span></button>`).join("")}</div>
+  <div class="coach" id="feed"></div>
+  <div class="actions">
+    <button class="btn go" id="check" disabled>${ICON.go} Check</button>
+    <span style="font-size:.78rem;color:#5b6a9c">press 1–4 then Enter</span>
+  </div>`;
+}
+function wireChoice(L,t){
+  let pick = null;
+  const check = $("#check");
+  const opts = () => app.querySelectorAll(".opt");
+  opts().forEach(b=>b.onclick = ()=>{
+    opts().forEach(x=>x.classList.remove("sel"));
+    b.classList.add("sel"); pick = +b.dataset.o; check.disabled = false;
+  });
+  check.onclick = ()=>{
+    const feed = $("#feed");
+    if(pick === t.a){
+      markAnswer(L, state.task, 1);
+      opts().forEach(b=>{ if(+b.dataset.o===t.a) b.classList.add("right"); b.disabled = true; });
+      feed.className = "coach show ok";
+      feed.innerHTML = `<span class="ic">✓</span><span><b>Correct!</b> ${t.why}</span>`;
+      nextButton(feed, state.task === L.tasks.length-1 ? "Finish level" : "Next task");
+    } else {
+      opts().forEach(b=>{ if(+b.dataset.o===pick) b.classList.add("wrong"); });
+      feed.className = "coach show no";
+      feed.innerHTML = `<span class="ic">✕</span><span><b>Not quite.</b> ${t.why}</span>`;
+      check.disabled = true;
+    }
+  };
+  clearKeys();
+  state.keyHandler = e=>{
+    if(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+    if(/^[1-4]$/.test(e.key)){ const b = opts()[+e.key-1]; if(b) b.click(); }
+    if(e.key === "Enter" && !check.disabled) check.click();
+  };
+  document.addEventListener("keydown", state.keyHandler);
+}
+
+/* ---------- trace tasks ---------- */
+function traceCells(t){
+  const cells = [];
+  t.rows.forEach((row,ri)=>row.forEach((v,ci)=>{ if(t.cols.includes(ci)) cells.push({ r:ri, c:ci }); }));
+  return cells;
+}
+function viewTrace(L,t){
+  return `
+  <div class="tracewrap"><table class="tr">
+    <thead><tr>${t.head.map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+    <tbody id="trBody">${traceRows(t,{})}</tbody>
+  </table></div>
+  <p class="poolhint">Tap a value below — it drops into the glowing box. Tap a filled box to empty it.</p>
+  <div class="pool" id="pool">${t.pool.map(v=>`<button class="chip" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div>
+  <div class="coach" id="feed"></div>
+  <div class="actions">
+    <button class="btn go" id="check" disabled>${ICON.go} Check</button>
+    <button class="btn ghost sm" id="clearTrace">Clear</button>
+  </div>`;
+}
+function traceRows(t, placed){
+  const cells = traceCells(t);
+  const firstEmpty = cells.findIndex((_,k)=>placed[k]===undefined);
+  return t.rows.map((row,ri)=>`<tr>${row.map((v,ci)=>{
+    if(!t.cols.includes(ci)) return `<td class="given">${esc(v)}</td>`;
+    const k = cells.findIndex(x=>x.r===ri && x.c===ci);
+    const val = placed[k];
+    const cls = val===undefined ? ("empty" + (k===firstEmpty ? " next" : "")) : "filled";
+    return `<td class="cell ${cls}" data-k="${k}">${val===undefined?"?":esc(val)}</td>`;
+  }).join("")}</tr>`).join("");
+}
+function wireTrace(L,t){
+  const cells = traceCells(t);
+  let placed = {};
+  const body = $("#trBody"), feed = $("#feed"), check = $("#check");
+  function draw(){
+    body.innerHTML = traceRows(t, placed);
+    body.querySelectorAll(".cell").forEach(td=>{
+      const k = +td.dataset.k;
+      td.onclick = ()=>{
+        if(placed[k]!==undefined){ delete placed[k]; }
+        draw();
+      };
+    });
+    check.disabled = cells.some((_,k)=>placed[k]===undefined);
+  }
+  $("#pool").querySelectorAll(".chip").forEach(chip=>{
+    chip.onclick = ()=>{
+      const k = cells.findIndex((_,i)=>placed[i]===undefined);
+      if(k<0) return;
+      placed[k] = chip.dataset.v;
+      draw();
+    };
+  });
+  $("#clearTrace").onclick = ()=>{ placed = {}; feed.className = "coach"; draw(); };
+  check.onclick = ()=>{
+    const got = cells.map((_,k)=>placed[k]);
+    const rightN = got.filter((v,k)=>v===t.a[k]).length;
+    if(rightN === t.a.length){
+      markAnswer(L, state.task, 1);
+      body.querySelectorAll(".cell").forEach(td=>td.className = "cell ok");
+      check.disabled = true;
+      feed.className = "coach show ok";
+      feed.innerHTML = `<span class="ic">✓</span><span><b>Table complete!</b> ${t.why}</span>`;
+      nextButton(feed, state.task === L.tasks.length-1 ? "Finish level" : "Next task");
+    } else {
+      cells.forEach((_,k)=>{ if(placed[k]!==t.a[k]) delete placed[k]; });
+      draw();
+      feed.className = "coach show no";
+      feed.innerHTML = `<span class="ic">✕</span><span><b>${rightN} of ${t.a.length} boxes right.</b> The wrong ones are empty again — try them once more.</span>`;
+    }
+  };
+  draw();
+}
+
+/* ---------- code task ---------- */
+function viewCode(L,t){
+  return `
+  <p style="margin:0 0 14px;color:#96a3cc;font-size:.93rem;line-height:1.55">${t.brief}</p>
+  <div class="editor">
+    <div class="gutter" id="gutter">1</div>
+    <textarea id="code" spellcheck="false">${esc(t.starter)}</textarea>
+  </div>
+  <div class="actions">
+    <button class="btn" id="run">${ICON.bolt} Run</button>
+    <button class="btn go" id="check">${ICON.go} Check code</button>
+    <button class="btn ghost sm" id="hintBtn">Hint</button>
+    <button class="btn ghost sm" id="refBtn">Answer</button>
+    <span style="font-size:.78rem;color:#5b6a9c">Tab indents · Ctrl+Enter runs</span>
+  </div>
+  <div class="hintbox" id="hint">${t.hint}</div>
+  <div class="hintbox" id="ref">${t.reference}</div>
+  <div class="console"><div class="bar"><span class="led"></span><span class="led"></span><span class="led"></span><b>OUTPUT</b></div>
+  <pre class="out" id="out"></pre></div>
+  <ul class="checks">${t.checks.map(c=>`<li id="ck_${c.id}"><span class="dot">·</span><span>${c.label}</span></li>`).join("")}</ul>
+  <div class="coach" id="feed"></div>`;
+}
+function wireCode(L,t){
+  const ta = $("#code"), out = $("#out"), feed = $("#feed"), gutter = $("#gutter");
+  const lineNums = ()=>{ gutter.textContent = Array.from({length:Math.max(1,ta.value.split("\n").length)},(_,i)=>i+1).join("\n"); };
+  ta.addEventListener("input", lineNums);
+  lineNums();
+  function insert(text){
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    ta.value = ta.value.slice(0,s) + text + ta.value.slice(e);
+    ta.selectionStart = ta.selectionEnd = s + text.length;
+    lineNums();
+  }
+  ta.addEventListener("keydown", e=>{
+    if(e.key === "Tab"){ e.preventDefault(); insert("    "); return; }
+    if(e.key === "Enter"){ e.preventDefault();
+      const before = ta.value.slice(0,ta.selectionStart), line = before.slice(before.lastIndexOf("\n")+1);
+      const lead = line.match(/^\s*/)[0] || "";
+      insert("\n" + lead + (/:\s*$/.test(line) ? "    " : "")); return; }
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter"){ e.preventDefault(); $("#run").click(); }
+  });
+  const toggle = id => { const h = $(id); h.style.display = h.style.display === "block" ? "none" : "block"; };
+  $("#hintBtn").onclick = ()=>toggle("#hint");
+  $("#refBtn").onclick = ()=>toggle("#ref");
+  $("#run").onclick = ()=>{
+    try{
+      const res = runPython(ta.value, ["Math","English","Art"]);
+      out.textContent = res.length ? res.join("\n") : "";
+    }catch(e){ out.textContent = "Simulator error: " + e.message; }
+  };
+  $("#check").onclick = ()=>{
+    const src = ta.value;
+    let hits = 0;
+    t.checks.forEach(c=>{
+      let ok = false;
+      try{ ok = !!c.test(src); }catch(e){ ok = false; }
+      const li = document.getElementById("ck_"+c.id);
+      li.className = ok ? "yes" : "no";
+      li.querySelector(".dot").textContent = ok ? "✓" : "✕";
+      if(ok) hits++;
+    });
+    markAnswer(L, state.task, hits);
+    if(hits === t.checks.length){
+      feed.className = "coach show ok";
+      feed.innerHTML = `<span class="ic">✓</span><span><b>All 5 checks passed.</b> Every point earned.</span>`;
+      nextButton(feed, state.task === L.tasks.length-1 ? "Finish level" : "Next task");
+    } else {
+      feed.className = "coach show no";
+      feed.innerHTML = `<span class="ic">✕</span><span><b>${hits} of ${t.checks.length}</b> checks passed. Fix the red lines — you can add more next time.</span>`;
+    }
+  };
+  clearKeys();
+  state.keyHandler = e=>{
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter" && $("#run")) $("#run").click();
+  };
+  document.addEventListener("keydown", state.keyHandler);
+}
+
+function nextButton(host, label){
+  const b = document.createElement("button");
+  b.className = "btn go";
+  b.style.marginTop = "12px";
+  b.textContent = label + "  ›";
+  b.onclick = ()=>{
+    const L = LEVELS.find(l=>l.id===state.level);
+    if(state.task === L.tasks.length-1) finishLevel(); else { state.task++; render(); }
+  };
+  host.appendChild(b);
+}
+
+function finishLevel(){
+  const L = LEVELS.find(l=>l.id===state.level);
+  const pts = levelPts(L);
+  const pct = pts ? Math.round(earned()/pts*100) : 0;
+  const st = starsOf(pct);
+  const prog = load();
+  if(!prog["L"+L.id] || pct > prog["L"+L.id].pct) prog["L"+L.id] = { pct, stars:st };
+  save(prog);
+  const next = LEVELS.find(l=>l.id===L.id+1);
+  app.innerHTML = `
+  <div class="hud">
+    <button class="icon-btn" id="menu">${ICON.back}</button>
+    <div class="title">Level ${L.id} complete</div>
+  </div>
+  <div class="card finish" style="--c:${L.color}">
+    <div class="burst">${[0,1,2].map(i=>`<span style="color:${i<st?"var(--gold)":"rgba(255,255,255,.14)"}">★</span>`).join("")}</div>
+    <div class="score-big" style="color:${L.color}">${earned()}<span style="font-size:1.2rem;color:#96a3cc">/${pts}</span></div>
+    <div style="color:#96a3cc;font-size:.9rem">${pct}%</div>
+    <p>${pct>=90?"Wow — you could teach this loop to a friend!"
+        : pct>=60?"Great work. Clean up the red boxes and go for three stars."
+        : "Keep going! Read the explanation and try the task again."}</p>
+    <div class="actions" style="justify-content:center">
+      ${next?`<button class="btn go" id="nextL">${next.name} ›</button>`:""}
+      <button class="btn" id="again">Play again</button>
+    </div>
+  </div>`;
+  if(st > 0) confetti();
+  $("#menu").onclick = ()=>{ state.level=null; render(); };
+  $("#again").onclick = ()=>startLevel(L.id);
+  const nl = $("#nextL");
+  if(nl) nl.onclick = ()=>startLevel(next.id);
+}
+function confetti(){
+  const colors = ["#4f8cff","#a06bff","#20d4c0","#ffc93c","#ff5d7e"];
+  const box = document.createElement("div");
+  box.className = "confetti";
+  box.innerHTML = Array.from({length:60},()=>{
+    const l = Math.random()*100, d = 2.4 + Math.random()*2;
+    return `<i style="left:${l}%;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${d}s;animation-delay:${Math.random()*1.2}s"></i>`;
+  }).join("");
+  document.body.appendChild(box);
+  setTimeout(()=>box.remove(), 5200);
+}
+
+const ICON = {
+  loop:'<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>',
+  back:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  go:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"/></svg>',
+  bolt:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>',
+  book:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5a2 2 0 012-2h13v18H6a2 2 0 01-2-2z"/><path d="M8 3v18"/></svg>'
+};
+
+document.addEventListener("keydown", e=>{
+  if(e.key === "Escape" && state.level && !$(".finish")){ state.level = null; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
